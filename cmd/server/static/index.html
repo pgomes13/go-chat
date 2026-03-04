@@ -253,8 +253,8 @@
       e.data.trim().split('\n').forEach(line => {
         if (!line) return;
         try {
-          const { sender, text } = JSON.parse(line);
-          addMessage(sender, text, sender === currentUser.name);
+          const { sender_id, sender, text } = JSON.parse(line);
+          addMessage(sender, text, sender_id === currentUser.id);
         } catch {
           addMessage('', line, false);
         }

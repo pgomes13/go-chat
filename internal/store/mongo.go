@@ -44,6 +44,7 @@ func New(uri string) (*Store, error) {
 }
 
 type messageDoc struct {
+	SenderID  string    `bson:"sender_id"`
 	Sender    string    `bson:"sender"`
 	Text      string    `bson:"text"`
 	CreatedAt time.Time `bson:"created_at"`
@@ -52,13 +53,15 @@ type messageDoc struct {
 // SaveMessage parses the JSON payload and inserts it as a document.
 func (s *Store) SaveMessage(ctx context.Context, msg []byte) error {
 	var p struct {
-		Sender string `json:"sender"`
-		Text   string `json:"text"`
+		SenderID string `json:"sender_id"`
+		Sender   string `json:"sender"`
+		Text     string `json:"text"`
 	}
 	if err := json.Unmarshal(msg, &p); err != nil {
 		return err
 	}
 	_, err := s.coll.InsertOne(ctx, messageDoc{
+		SenderID:  p.SenderID,
 		Sender:    p.Sender,
 		Text:      p.Text,
 		CreatedAt: time.Now().UTC(),
@@ -90,7 +93,11 @@ func (s *Store) History(ctx context.Context) ([][]byte, error) {
 
 	msgs := make([][]byte, 0, len(docs))
 	for _, d := range docs {
-		b, _ := json.Marshal(map[string]string{"sender": d.Sender, "text": d.Text})
+		b, _ := json.Marshal(map[string]string{
+			"sender_id": d.SenderID,
+			"sender":    d.Sender,
+			"text":      d.Text,
+		})
 		msgs = append(msgs, b)
 	}
 	return msgs, nil

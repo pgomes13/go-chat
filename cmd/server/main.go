@@ -76,7 +76,7 @@ func main() {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		chat.ServeWs(hub, w, r, user.Name)
+		chat.ServeWs(hub, w, r, user.ID, user.Name)
 	})
 
 	// Static files.

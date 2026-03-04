@@ -29,6 +29,7 @@ type Client struct {
 	hub      *Hub
 	conn     *websocket.Conn
 	send     chan []byte
+	userID   string
 	username string
 }
 
@@ -55,9 +56,10 @@ func (c *Client) readPump() {
 			break
 		}
 
-		// Enforce server-side sender so clients can't spoof each other.
+		// Enforce server-side identity so clients can't spoof each other.
 		var payload map[string]interface{}
 		if json.Unmarshal(message, &payload) == nil {
+			payload["sender_id"] = c.userID
 			payload["sender"] = c.username
 			if b, err := json.Marshal(payload); err == nil {
 				message = b
@@ -112,7 +114,7 @@ func (c *Client) writePump() {
 }
 
 // ServeWs handles websocket requests from clients.
-func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, username string) {
+func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, userID, username string) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("upgrade error: %v", err)
@@ -123,6 +125,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, username string) 
 		hub:      hub,
 		conn:     conn,
 		send:     make(chan []byte, 256),
+		userID:   userID,
 		username: username,
 	}
 	client.hub.register <- client
