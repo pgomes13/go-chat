@@ -30,6 +30,11 @@ func main() {
 	// Load .env file if present (errors are ignored — env vars may be set externally).
 	godotenv.Load()
 
+	// Cloud Run injects PORT; let it override the -addr flag.
+	if port := os.Getenv("PORT"); port != "" {
+		*addr = ":" + port
+	}
+
 	// OAuth config from environment variables.
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
