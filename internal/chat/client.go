@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -25,9 +26,10 @@ var upgrader = websocket.Upgrader{
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	hub  *Hub
-	conn *websocket.Conn
-	send chan []byte
+	hub      *Hub
+	conn     *websocket.Conn
+	send     chan []byte
+	username string
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -52,6 +54,16 @@ func (c *Client) readPump() {
 			}
 			break
 		}
+
+		// Enforce server-side sender so clients can't spoof each other.
+		var payload map[string]interface{}
+		if json.Unmarshal(message, &payload) == nil {
+			payload["sender"] = c.username
+			if b, err := json.Marshal(payload); err == nil {
+				message = b
+			}
+		}
+
 		c.hub.broadcast <- message
 	}
 }
@@ -100,7 +112,7 @@ func (c *Client) writePump() {
 }
 
 // ServeWs handles websocket requests from clients.
-func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, username string) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("upgrade error: %v", err)
@@ -108,9 +120,10 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &Client{
-		hub:  hub,
-		conn: conn,
-		send: make(chan []byte, 256),
+		hub:      hub,
+		conn:     conn,
+		send:     make(chan []byte, 256),
+		username: username,
 	}
 	client.hub.register <- client
 
