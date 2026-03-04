@@ -20,8 +20,8 @@ import (
 var staticFiles embed.FS
 
 var (
-	addr      = flag.String("addr", ":8080", "http service address")
-	redisAddr = flag.String("redis", "localhost:6379", "redis address")
+	addr     = flag.String("addr", ":8080", "http service address")
+	mongoURI = flag.String("mongo", "mongodb://localhost:27017", "mongodb URI")
 )
 
 func main() {
@@ -47,10 +47,15 @@ func main() {
 	}
 	auth.Init(clientID, clientSecret, redirectURL, sessionSecret)
 
-	// Redis store (optional).
+	// MONGO_URI env var takes precedence over the -mongo flag.
+	if envURI := os.Getenv("MONGO_URI"); envURI != "" {
+		*mongoURI = envURI
+	}
+
+	// MongoDB store (optional).
 	var s *store.Store
-	if rs, err := store.New(*redisAddr); err != nil {
-		log.Printf("redis unavailable (%v) — running without persistence", err)
+	if rs, err := store.New(*mongoURI); err != nil {
+		log.Printf("mongodb unavailable (%v) — running without persistence", err)
 	} else {
 		s = rs
 	}
@@ -71,7 +76,7 @@ func main() {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		chat.ServeWs(hub, w, r, user.Name)
+		chat.ServeWs(hub, w, r, user.ID, user.Name)
 	})
 
 	// Static files.
