@@ -10,7 +10,7 @@ test:
 	go test ./... -v -timeout 30s
 
 deploy:
-	./deploy.sh
+	./scripts/deploy/main.sh
 
 clean:
 	rm -rf bin/
