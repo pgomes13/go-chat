@@ -47,6 +47,11 @@ func main() {
 	}
 	auth.Init(clientID, clientSecret, redirectURL, sessionSecret)
 
+	// MONGO_URI env var takes precedence over the -mongo flag.
+	if envURI := os.Getenv("MONGO_URI"); envURI != "" {
+		*mongoURI = envURI
+	}
+
 	// MongoDB store (optional).
 	var s *store.Store
 	if rs, err := store.New(*mongoURI); err != nil {
