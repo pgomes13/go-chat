@@ -18,7 +18,11 @@ func initAuth() {
 
 	redirectURL := os.Getenv("OAUTH_REDIRECT_URL")
 	if redirectURL == "" {
-		redirectURL = "http://localhost" + *addr + "/auth/google/callback"
+		base := os.Getenv("APP_BASE_URL")
+		if base == "" {
+			base = "http://localhost" + *addr
+		}
+		redirectURL = base + "/auth/google/callback"
 	}
 
 	sessionSecret := os.Getenv("SESSION_SECRET")
