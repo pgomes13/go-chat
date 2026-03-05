@@ -9,11 +9,24 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var allowedOrigins []string
+
+// SetAllowedOrigins configures which origins may open a WebSocket connection.
+func SetAllowedOrigins(origins []string) {
+	allowedOrigins = origins
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		return true // allow all origins for now
+		origin := r.Header.Get("Origin")
+		for _, o := range allowedOrigins {
+			if origin == o {
+				return true
+			}
+		}
+		return false
 	},
 }
 

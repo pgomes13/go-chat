@@ -35,7 +35,7 @@ func main() {
 	registerRoutes(hub)
 
 	log.Printf("server starting on %s", *addr)
-	if err := http.ListenAndServe(*addr, nil); err != nil {
+	if err := http.ListenAndServe(*addr, secureHeaders(http.DefaultServeMux)); err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
 }

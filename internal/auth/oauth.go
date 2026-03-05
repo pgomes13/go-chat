@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/sessions"
 	"golang.org/x/oauth2"
@@ -40,6 +41,7 @@ func Init(clientID, clientSecret, redirectURL, sessionSecret string) {
 		Path:     "/",
 		MaxAge:   86400 * 7, // 7 days
 		HttpOnly: true,
+		Secure:   strings.HasPrefix(redirectURL, "https://"),
 		SameSite: http.SameSiteLaxMode,
 	}
 }

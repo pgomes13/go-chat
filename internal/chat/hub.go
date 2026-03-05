@@ -3,6 +3,7 @@ package chat
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/pgomes13/go-chat/internal/store"
 )
@@ -27,8 +28,6 @@ func NewHub(s *store.Store) *Hub {
 }
 
 func (h *Hub) Run() {
-	ctx := context.Background()
-
 	for {
 		select {
 		case client := <-h.register:
@@ -42,9 +41,11 @@ func (h *Hub) Run() {
 
 		case message := <-h.broadcast:
 			if h.store != nil {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				if err := h.store.SaveMessage(ctx, message); err != nil {
 					log.Printf("mongodb save error: %v", err)
 				}
+				cancel()
 			}
 			h.deliver(message)
 		}
