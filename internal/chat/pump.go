@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/pgomes13/go-chat/internal/commons"
 )
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -15,10 +16,10 @@ func (c *Client) readPump() {
 		c.conn.Close()
 	}()
 
-	c.conn.SetReadLimit(maxMessageSize)
-	c.conn.SetReadDeadline(time.Now().Add(pongWait))
+	c.conn.SetReadLimit(commons.MaxMessageSize)
+	c.conn.SetReadDeadline(time.Now().Add(commons.PongWait))
 	c.conn.SetPongHandler(func(string) error {
-		c.conn.SetReadDeadline(time.Now().Add(pongWait))
+		c.conn.SetReadDeadline(time.Now().Add(commons.PongWait))
 		return nil
 	})
 
@@ -47,7 +48,7 @@ func (c *Client) readPump() {
 
 // writePump pumps messages from the hub to the websocket connection.
 func (c *Client) writePump() {
-	ticker := time.NewTicker(pingPeriod)
+	ticker := time.NewTicker(commons.PingPeriod)
 	defer func() {
 		ticker.Stop()
 		c.conn.Close()
@@ -56,7 +57,7 @@ func (c *Client) writePump() {
 	for {
 		select {
 		case message, ok := <-c.send:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			c.conn.SetWriteDeadline(time.Now().Add(commons.WriteWait))
 			if !ok {
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
@@ -80,7 +81,7 @@ func (c *Client) writePump() {
 			}
 
 		case <-ticker.C:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			c.conn.SetWriteDeadline(time.Now().Add(commons.WriteWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}

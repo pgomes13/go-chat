@@ -10,6 +10,8 @@ import (
 	"github.com/gorilla/sessions"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+
+	"github.com/pgomes13/go-chat/internal/commons"
 )
 
 var (
@@ -45,7 +47,7 @@ func Init(clientID, clientSecret, redirectURL, sessionSecret string) {
 // HandleLogin redirects the user to Google's OAuth consent screen.
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	state := randomState()
-	sess, _ := cookieStore.Get(r, sessionName)
+	sess, _ := cookieStore.Get(r, commons.SessionName)
 	sess.Values["oauth_state"] = state
 	sess.Save(r, w)
 	http.Redirect(w, r, oauthCfg.AuthCodeURL(state), http.StatusTemporaryRedirect)
@@ -53,7 +55,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 // HandleCallback exchanges the code for a token and stores the user in the session.
 func HandleCallback(w http.ResponseWriter, r *http.Request) {
-	sess, _ := cookieStore.Get(r, sessionName)
+	sess, _ := cookieStore.Get(r, commons.SessionName)
 
 	if r.FormValue("state") != sess.Values["oauth_state"] {
 		http.Error(w, "invalid oauth state", http.StatusBadRequest)
@@ -84,7 +86,7 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 
 // HandleLogout clears the session.
 func HandleLogout(w http.ResponseWriter, r *http.Request) {
-	sess, _ := cookieStore.Get(r, sessionName)
+	sess, _ := cookieStore.Get(r, commons.SessionName)
 	sess.Options.MaxAge = -1
 	sess.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
@@ -103,7 +105,7 @@ func HandleMe(w http.ResponseWriter, r *http.Request) {
 
 // GetUser returns the authenticated user from the session, or nil.
 func GetUser(r *http.Request) *User {
-	sess, err := cookieStore.Get(r, sessionName)
+	sess, err := cookieStore.Get(r, commons.SessionName)
 	if err != nil {
 		return nil
 	}

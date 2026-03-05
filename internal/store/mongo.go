@@ -10,6 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
+
+	"github.com/pgomes13/go-chat/internal/commons"
 )
 
 type Store struct {
@@ -30,7 +32,7 @@ func New(uri, db string, historyLimit int64) (*Store, error) {
 		return nil, err
 	}
 
-	coll := client.Database(db).Collection(collName)
+	coll := client.Database(db).Collection(commons.CollName)
 	coll.Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys: bson.D{{Key: "created_at", Value: 1}},
 	})
