@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"net/url"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -39,7 +40,7 @@ func New(uri string) (*Store, error) {
 		Keys: bson.D{{Key: "created_at", Value: 1}},
 	})
 
-	log.Printf("mongodb connected: %s", uri)
+	log.Printf("mongodb connected: %s", redactURI(uri))
 	return &Store{client: client, coll: coll}, nil
 }
 
@@ -101,4 +102,13 @@ func (s *Store) History(ctx context.Context) ([][]byte, error) {
 		msgs = append(msgs, b)
 	}
 	return msgs, nil
+}
+
+func redactURI(uri string) string {
+	u, err := url.Parse(uri)
+	if err != nil || u.User == nil {
+		return uri
+	}
+	u.User = url.User(u.User.Username())
+	return u.String()
 }

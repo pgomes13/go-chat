@@ -1,8 +1,10 @@
 package chat
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -34,7 +36,9 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, userID, username 
 
 	// Send message history to the new client.
 	if hub.store != nil {
-		history, err := hub.store.History(r.Context())
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		history, err := hub.store.History(ctx)
 		if err != nil {
 			log.Printf("mongodb history error: %v", err)
 		}
