@@ -32,13 +32,13 @@ make run
 
 ## Commands
 
-| Command | Description |
-|---|---|
-| `make run` | Run locally |
-| `make build` | Compile to `bin/server` |
-| `make test` | Run tests |
-| `make deploy` | Deploy to Cloud Run |
-| `make clean` | Remove `bin/` |
+| Command       | Description             |
+| ------------- | ----------------------- |
+| `make run`    | Run locally             |
+| `make build`  | Compile to `bin/server` |
+| `make test`   | Run tests               |
+| `make deploy` | Deploy to Cloud Run     |
+| `make clean`  | Remove `bin/`           |
 
 ---
 
@@ -52,22 +52,20 @@ make deploy
 
 The script handles: build → APIs → IAM → secrets → Cloud Run deploy.
 
-**First deploy only:** leave `OAUTH_REDIRECT_URL` unset — the script discovers the URL and saves it to `.env`. Then add the printed redirect URI to Google OAuth.
-
 **Atlas:** set Network Access to `0.0.0.0/0` (Cloud Run has dynamic IPs).
 
 ---
 
 ## Environment variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `GOOGLE_CLIENT_ID` | required | OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | required | OAuth client secret |
-| `MONGO_URI` | `mongodb://localhost:27017` | MongoDB URI |
-| `OAUTH_REDIRECT_URL` | `APP_BASE_URL/auth/google/callback` | Full OAuth redirect URL |
-| `APP_BASE_URL` | `http://localhost:<port>` | Base URL for redirect URI |
-| `SESSION_SECRET` | random | Cookie signing key — set to persist sessions |
-| `MONGO_DB` | `gochat` | Database name |
-| `HISTORY_LIMIT` | `50` | Messages loaded on connect |
-| `PORT` | `8080` | Injected by Cloud Run |
+| Variable               | Default                             | Description                                  |
+| ---------------------- | ----------------------------------- | -------------------------------------------- |
+| `GOOGLE_CLIENT_ID`     | required                            | OAuth client ID                              |
+| `GOOGLE_CLIENT_SECRET` | required                            | OAuth client secret                          |
+| `MONGO_URI`            | `mongodb://localhost:27017`         | MongoDB URI                                  |
+| `OAUTH_REDIRECT_URL`   | `APP_BASE_URL/auth/google/callback` | Full OAuth redirect URL                      |
+| `APP_BASE_URL`         | `http://localhost:<port>`           | Base URL for redirect URI                    |
+| `SESSION_SECRET`       | random                              | Cookie signing key — set to persist sessions |
+| `MONGO_DB`             | `gochat`                            | Database name                                |
+| `HISTORY_LIMIT`        | `50`                                | Messages loaded on connect                   |
+| `PORT`                 | `8080`                              | Injected by Cloud Run                        |
