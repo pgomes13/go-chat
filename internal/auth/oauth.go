@@ -12,8 +12,6 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-const sessionName = "go-chat"
-
 var (
 	cookieStore *sessions.CookieStore
 	oauthCfg    *oauth2.Config

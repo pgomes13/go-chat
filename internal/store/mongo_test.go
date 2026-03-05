@@ -9,35 +9,43 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func mongoURI(t *testing.T) string {
+func testStore(t *testing.T) *Store {
 	t.Helper()
 	godotenv.Load("../../.env")
+
 	uri := os.Getenv("MONGO_URI")
 	if uri == "" {
 		uri = "mongodb://localhost:27017"
 	}
-	return uri
-}
+	db := os.Getenv("MONGO_DB")
+	if db == "" {
+		db = "gochat"
+	}
 
-func TestConnection(t *testing.T) {
-	s, err := New(mongoURI(t))
+	s, err := New(uri, db, 50)
 	if err != nil {
 		t.Fatalf("connect: %v", err)
 	}
+	return s
+}
+
+func TestConnection(t *testing.T) {
+	s := testStore(t)
 	t.Log("connected successfully")
 	s.client.Disconnect(context.Background())
 }
 
 func TestSaveAndHistory(t *testing.T) {
-	s, err := New(mongoURI(t))
-	if err != nil {
-		t.Fatalf("connect: %v", err)
-	}
+	s := testStore(t)
 	defer s.client.Disconnect(context.Background())
 
 	ctx := context.Background()
 
-	msg, _ := json.Marshal(map[string]string{"sender": "test_user", "text": "hello from test"})
+	msg, _ := json.Marshal(map[string]string{
+		"sender_id": "test_id",
+		"sender":    "test_user",
+		"text":      "hello from test",
+	})
 	if err := s.SaveMessage(ctx, msg); err != nil {
 		t.Fatalf("SaveMessage: %v", err)
 	}

@@ -12,18 +12,13 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-const (
-	dbName         = "gochat"
-	collName       = "messages"
-	maxHistorySize = 50
-)
-
 type Store struct {
-	client *mongo.Client
-	coll   *mongo.Collection
+	client       *mongo.Client
+	coll         *mongo.Collection
+	historyLimit int64
 }
 
-func New(uri string) (*Store, error) {
+func New(uri, db string, historyLimit int64) (*Store, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -35,13 +30,13 @@ func New(uri string) (*Store, error) {
 		return nil, err
 	}
 
-	coll := client.Database(dbName).Collection(collName)
+	coll := client.Database(db).Collection(collName)
 	coll.Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys: bson.D{{Key: "created_at", Value: 1}},
 	})
 
 	log.Printf("mongodb connected: %s", redactURI(uri))
-	return &Store{client: client, coll: coll}, nil
+	return &Store{client: client, coll: coll, historyLimit: historyLimit}, nil
 }
 
 type messageDoc struct {
@@ -74,7 +69,7 @@ func (s *Store) SaveMessage(ctx context.Context, msg []byte) error {
 func (s *Store) History(ctx context.Context) ([][]byte, error) {
 	opts := options.Find().
 		SetSort(bson.D{{Key: "created_at", Value: -1}}).
-		SetLimit(maxHistorySize)
+		SetLimit(s.historyLimit)
 
 	cursor, err := s.coll.Find(ctx, bson.D{}, opts)
 	if err != nil {
