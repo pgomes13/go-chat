@@ -4,6 +4,7 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -36,7 +37,7 @@ func registerRoutes(hub *chat.Hub) {
 }
 
 // allowedOrigins builds the WebSocket origin allowlist.
-// ALLOWED_ORIGINS (comma-separated) takes precedence; falls back to APP_BASE_URL.
+// Priority: ALLOWED_ORIGINS env var → APP_BASE_URL → origin extracted from OAUTH_REDIRECT_URL → localhost fallback.
 func allowedOrigins() []string {
 	if v := os.Getenv("ALLOWED_ORIGINS"); v != "" {
 		var origins []string
@@ -47,8 +48,10 @@ func allowedOrigins() []string {
 		}
 		return origins
 	}
-	if base := os.Getenv("APP_BASE_URL"); base != "" {
-		return []string{base}
+	if redirect := os.Getenv("OAUTH_REDIRECT_URL"); redirect != "" {
+		if u, err := url.Parse(redirect); err == nil {
+			return []string{u.Scheme + "://" + u.Host}
+		}
 	}
 	return []string{"http://localhost" + *addr}
 }

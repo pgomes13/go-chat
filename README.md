@@ -13,8 +13,6 @@ Real-time chat with Go, WebSockets, Google OAuth, and MongoDB Atlas.
 ```env
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
-APP_BASE_URL=http://localhost:8080
-OAUTH_REDIRECT_URL=http://localhost:8080/auth/google/callback
 MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/?appName=go-chat
 ```
 
@@ -63,8 +61,6 @@ The script handles: build → APIs → IAM → secrets → Cloud Run deploy.
 | `GOOGLE_CLIENT_ID`     | required                            | OAuth client ID                              |
 | `GOOGLE_CLIENT_SECRET` | required                            | OAuth client secret                          |
 | `MONGO_URI`            | `mongodb://localhost:27017`         | MongoDB URI                                  |
-| `OAUTH_REDIRECT_URL`   | `APP_BASE_URL/auth/google/callback` | Full OAuth redirect URL                      |
-| `APP_BASE_URL`         | `http://localhost:<port>`           | Base URL for redirect URI                    |
 | `SESSION_SECRET`       | random                              | Cookie signing key — set to persist sessions |
 | `MONGO_DB`             | `gochat`                            | Database name                                |
 | `HISTORY_LIMIT`        | `50`                                | Messages loaded on connect                   |
